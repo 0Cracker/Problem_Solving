@@ -1,0 +1,59 @@
+//백준 1679 숨바꼭질
+#include<stdio.h>
+#include<vector>
+#include<algorithm>
+#include<deque>
+
+#define MAX 100001
+using namespace std;
+vector<int> graph[MAX];
+class index{
+    public:
+        int place;
+        int sec;
+
+        index(int a, int b){
+            place=a;
+            sec=b;
+        }
+};
+
+deque<index> q;
+int visit[MAX]={0};
+
+
+void bfs(int start, int m){
+    q.emplace_back(start,0);
+    int cur_place, cur_sec;
+    visit[start]=1;
+   // printf("start now %d\n\n",start);
+    while(1){
+        cur_place=q.front().place;
+        cur_sec=q.front().sec;
+        //printf(" place: %d  sec: %d\n", cur_place, cur_sec);
+        if(cur_place==m) break;
+        q.pop_front();
+        if(cur_place*2<=100000 && visit[cur_place*2]==0){
+            visit[cur_place]=1;
+            q.emplace_back(cur_place*2,cur_sec+1);
+
+        } 
+        if(cur_place+1<=100000 && visit[cur_place+1]==0) {
+            visit[cur_place+1]=1;
+            q.emplace_back(cur_place+1,cur_sec+1);
+        }
+        if(cur_place-1>=0 && visit[cur_place-1]==0){
+            visit[cur_place-1]=1;
+            q.emplace_back(cur_place-1,cur_sec+1);
+        } 
+        
+    }
+    
+    printf("%d\n",cur_sec);
+}
+
+int main(){
+    int n, m;
+    scanf("%d %d", &n, &m);
+    bfs(n, m);
+}
