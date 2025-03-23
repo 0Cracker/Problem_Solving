@@ -1,0 +1,53 @@
+//가로등
+#include<stdio.h>
+#include<map>
+#include<vector>
+#include<algorithm>
+#include<iostream>
+#include<deque>
+#define MAX 300002
+using namespace std;
+
+int is_valid(long long pos, long long l){
+    if(pos<0 || pos>l) return 0;
+    return 1;
+}
+
+
+
+/* a.insert(make_pair(1,1));
+    a[1]=2;
+    a.erase(1); */
+
+int main(){
+    map<long long, int> lights; // 위치 밝기
+    deque<long long > deck; // 위치 덱 안에다 저장
+    long long l;
+    int n, k;
+    int cnt=0;
+    scanf("%llu %d %d", &l, &n, &k);
+    for(int i=0; i<n; i++){
+        unsigned long long temp;
+        scanf("%lld",&temp);
+        lights[temp]=0;
+        deck.emplace_back(temp);
+    }
+    while(1){
+        if(cnt==k) break;
+        unsigned long long cur_pos=deck.front();
+        unsigned long long cur_light=lights[cur_pos];
+        deck.pop_front();
+        cnt++;
+        printf("%lld\n",cur_light);
+
+        if(is_valid(cur_pos+1,l) && (lights.find(cur_pos+1)==lights.end())){
+            deck.emplace_back(cur_pos+1);
+            lights[cur_pos+1]=cur_light+1;
+        } 
+        if(is_valid(cur_pos-1,l) && (lights.find(cur_pos-1)==lights.end())){
+            deck.emplace_back(cur_pos-1);
+            lights[cur_pos-1]=cur_light+1;
+        }
+
+    }
+}
