@@ -1,0 +1,222 @@
+#include<stdio.h>
+#include<vector>
+#include<algorithm>
+#include<deque>
+#define BOARD 0
+#define WALL 1
+#define SNAKE 2
+#define APPLE 3
+using namespace std;
+int board[102][102]={0};
+int time=0;
+
+struct com{
+    int sec;
+    char direction;
+};
+
+struct pos{
+    int x;
+    int y;
+    pos(int a, int b) : x(a), y(b) {}
+};
+
+deque<pos> snake_body; //0은 항상헤드 마지막은 꼬리 배열안은 위치정보 (좌표)
+deque<com> com_set;
+// 0 보드 1 벽 2 뱀 3 사과
+
+void print_board(int n){
+    printf("==============\n");
+    for(int i=0;i<=n+1;i++){
+        for(int j=0; j<=n+1; j++){
+            printf("%d",board[i][j]);
+        }
+        printf("\n");
+    }
+    printf("==============\n");
+}
+
+int move_valid_check(char direction){
+    int head_x=snake_body.front().x;
+    int head_y=snake_body.front().y;
+    switch ((direction))
+    {
+    case 'U':
+        if(board[head_x-1][head_y]==WALL || board[head_x-1][head_y]==SNAKE) return 0;
+        return 1;
+        break;
+    case 'D':
+        if(board[head_x+1][head_y]==WALL || board[head_x+1][head_y]==SNAKE) return 0;
+        return 1;
+        break;
+    case 'L':
+        if(board[head_x][head_y-1]==WALL || board[head_x][head_y-1]==SNAKE) return 0;
+        return 1;
+        break;
+    case 'R':
+        if(board[head_x][head_y+1]==WALL || board[head_x][head_y+1]==SNAKE) return 0;
+        return 1;
+        break;
+
+    
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+char change_dir(char cur_dir, char com){
+    switch (cur_dir)
+    {
+    case 'U':
+        if(com=='L') return 'L';
+        else if(com=='D') return 'R';
+        break;
+    case 'D':
+        if(com=='L') return 'R';
+        else if(com=='D') return 'L';
+        break;
+    case 'R':
+        if(com=='L') return 'U';
+        else if(com=='D') return 'D';
+        break;
+    case 'L':
+        if(com=='L') return 'D';
+        else if(com=='D') return 'U';
+        break;
+
+    default:
+        break;
+    }
+    printf("wrong direction input\n");
+    return 'X';
+}
+
+int is_apple(char direction){
+    int head_x=snake_body.front().x;
+    int head_y=snake_body.front().y;
+    int tail_x=snake_body.back().x;
+    int tail_y=snake_body.back().y;
+    //printf("head : %d %d, tail: %d %d \n",head_x,head_y,tail_x,tail_y);
+    int apple_check=1;
+    switch (direction)
+    {
+    case 'U':
+        if(board[head_x-1][head_y]!=APPLE) {
+            board[tail_x][tail_y]=BOARD;
+            snake_body.pop_back();
+            apple_check=0;
+        }
+        board[head_x-1][head_y]=SNAKE;
+        snake_body.push_front(pos(head_x-1,head_y));
+        break;
+    case 'D':
+        if(board[head_x+1][head_y]!=APPLE) {
+            board[tail_x][tail_y]=BOARD;
+            snake_body.pop_back();
+            apple_check=0;
+        }
+        board[head_x+1][head_y]=SNAKE;
+        snake_body.push_front(pos(head_x+1,head_y));
+        break;
+    case 'L':
+        if(board[head_x][head_y-1]!=APPLE) {
+            board[tail_x][tail_y]=BOARD;
+            snake_body.pop_back();
+            apple_check=0;
+        }
+        board[head_x][head_y-1]=SNAKE;
+        snake_body.push_front(pos(head_x,head_y-1));
+        break;
+    case 'R':
+        if(board[head_x][head_y+1]!=APPLE) {
+            board[tail_x][tail_y]=BOARD;
+            snake_body.pop_back();
+            apple_check=0;
+        }
+        board[head_x][head_y+1]=SNAKE;
+        snake_body.push_front(pos(head_x,head_y+1));
+        break;
+    default:
+        break;
+    }
+    return apple_check;
+}
+
+int game(char direction){
+    int head_x=snake_body.front().x;
+    int head_y=snake_body.front().y;
+    //벨리드한지 체크 먼저.
+    if(!move_valid_check(direction)){
+    //    printf("not valid move!\n");
+        return 0;
+    }
+    // 움직일 수 있는 경우
+    else{
+        is_apple(direction);
+    }
+    return 1;
+}      
+
+int main(){
+    int n, k;
+    int l;
+    int cnt=0;
+    char cur_dir='R';
+    scanf("%d",&n);
+    scanf("%d",&k);
+    //보드 벽 치기
+    for(int i=0; i<=n+1;i++){
+        if(i==0 || i==n+1){
+            for(int j=0; j<=n+1;j++){
+                board[i][j]=WALL;
+            }
+        }
+        board[i][0]=WALL;
+        board[i][n+1]=WALL;
+    }
+    // 사과 위치 입력 받고 보드에 업데이트트
+    for(int i=0;i<k;i++){
+        int row, column;
+        scanf("%d %d", &row, &column);
+        if(row>=1 && row<=n){
+            if(column>=1 && column<=n){
+                board[row][column]=APPLE;
+            }        
+        }
+    }
+
+    // 뱀 무빙 커멘드 입력받기
+    scanf("%d",&l);
+    for(int i=0;i<l;i++){
+        int x;
+        char c;
+        scanf("%d  %c", &x,&c);
+        com temp;
+        temp.sec=x;
+        temp.direction=c;
+        com_set.emplace_back(temp);
+    }
+
+    // 처음 snake body initiate
+    //머리
+    snake_body.push_back(pos(1,1));
+    board[1][1]=SNAKE;
+    while(1){
+        //매 초마다 커멘드 계속 체크 하기.
+        
+        //print_board(n);
+        if(!game(cur_dir)) break;
+        cnt++;
+        if((!com_set.empty()) && com_set.front().sec==cnt){
+        //    printf("command change\n");
+            char com=com_set.front().direction;
+            com_set.pop_front();
+            cur_dir=change_dir(cur_dir,com);
+        }
+        //printf("when sec: %d  now command: %c \n",cnt, cur_dir);
+    }
+    printf("%d\n",cnt+1);
+    return 0;
+}
